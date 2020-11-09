@@ -2,7 +2,7 @@ from mesa import Model
 from mesa.space import MultiGrid
 from mesa.time import SimultaneousActivation
 from mesa.datacollection import DataCollector
-from agent import House, Criminal
+from agent import House, Criminal, Cop
 import math
 from statistics import mean, median
 import random
@@ -57,8 +57,8 @@ def get_max_att_pos(model):
 
 class BurglaryModel(Model):
 
-    def __init__(self, N, width, height, b_rate, delta, omega, theta, mu, gamma, space):
-        self.num_agents = N
+    def __init__(self, num_agents, width, height, b_rate, omega, theta, mu, gamma, space, kappa, chi, epsilon):
+        self.num_agents = num_agents
         self.grid = MultiGrid(width, height, True)
         self.width = width
         self.height = height
@@ -66,15 +66,17 @@ class BurglaryModel(Model):
         self.schedule = SimultaneousActivation(self)
         self.house_schedule = SimultaneousActivation(self)
         self.b_rate = b_rate
-        self.delta = delta
         self.omega = omega
         self.theta = theta
         self.mu = mu
         self.kill_agents = []
         self.gamma = gamma
-        self.gen_agent = 1 - math.exp(-self.gamma*self.delta)
+        self.gen_agent = 1 - math.exp(-self.gamma)
         self.total_agents = self.num_agents
         self.space = space
+        self.kappa = kappa
+        self.chi = chi
+        self.epsilon =epsilon
 
         a_0 = 0.1
         # place houses on grid, 1 house per grid location
@@ -82,7 +84,7 @@ class BurglaryModel(Model):
             for j in range(self.height):
                 num = str(i) + str(j)
                 num = int(num)
-                a = House(num, self, a_0, i, j, self.delta, self.omega, self.theta, self.mu, self.space)
+                a = House(num, self, a_0, i, j,  self.omega, self.theta, self.mu, self.space)
                 self.grid.place_agent(a, (a.x_point, a.y_point))
                 self.house_schedule.add(a)
 
@@ -92,6 +94,13 @@ class BurglaryModel(Model):
             criminal = Criminal(unique_id, self, self.width, self.height)
             self.grid.place_agent(criminal, (criminal.x_point, criminal.y_point))
             self.schedule.add(criminal)
+
+        for cops in range(self.kappa):
+            unique_id = "cop" + str(cops)
+            cop = Cop(unique_id, self, self.width, self.height)
+            self.grid.place_agent(cop, (cop.x_point, cop.y_point))
+            self.schedule.add(cop)
+
 
         # set up data collection
         self.datacollector = DataCollector(
@@ -139,8 +148,9 @@ class BurglaryModel(Model):
 
 
 if __name__ == '__main__':
-    model = BurglaryModel(5, 128, 128, 2, 5, 5, 5.6, 0.2, 5)
+    model = BurglaryModel(5, 128, 128, 2, 0.005, 5.6, 0.2, 5, 1, 20, 0.5, 0.5)
     for i in range(10):
+        print (i)
         model.step()
 
     print(model)

@@ -5,11 +5,11 @@ from matplotlib import colors
 import matplotlib.animation as animation
 from agent import House
 
-model = model.BurglaryModel(0, 128, 128, 5, 0.01, .06, 5.6, 0.1, 0.019, 1)
+model = model.BurglaryModel(0, 128, 128, 5, .06, 5.6, 0.1, 0.019, 1, 5, 5, 0.3)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    for i in range(10):
+    for i in range(1000):
         model.step()
         print(i)
 
@@ -22,7 +22,7 @@ if __name__ == '__main__':
                 crimes = row.att_t
                 crime_counts[x][y] = crimes
 
-    norm = colors.Normalize(vmin=0.2, vmax=(model.theta * 0.75))
+    norm = colors.Normalize(vmin=0.1, vmax=(model.theta * 0.75))
 
     plt.imshow(crime_counts, interpolation='nearest', cmap=plt.get_cmap('seismic'), norm=norm)
     plt.colorbar()
